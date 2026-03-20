@@ -11,49 +11,30 @@ app.get('/', (req, res) => {
 
 app.post('/api/chat', async (req, res) => {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
       return res.status(500).json({ error: 'API key not configured' });
     }
 
-    const messages = req.body.messages || [];
-    const parts = [];
-    
-    for (const msg of messages) {
-      if (typeof msg.content === 'string') {
-        parts.push({ text: msg.content });
-      } else if (Array.isArray(msg.content)) {
-        for (const c of msg.content) {
-          if (c.type === 'text') parts.push({ text: c.text });
-          if (c.type === 'image') {
-            parts.push({
-              inlineData: {
-                mimeType: c.source.media_type,
-                data: c.source.data
-              }
-            });
-          }
-        }
-      }
-    }
-
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts }]
-        })
-      }
-    );
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'meta-llama/llama-3.2-3b-instruct:free',
+        messages: req.body.messages,
+        max_tokens: 1000
+      })
+    });
 
     const data = await response.json();
-    console.log('Gemini response:', JSON.stringify(data));
+    console.log('OpenRouter response:', JSON.stringify(data));
     
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 
+    const text = data.choices?.[0]?.message?.content || 
                  data.error?.message || 
-                 'No response from Gemini';
+                 'No response';
     
     res.json({ content: [{ type: 'text', text }] });
 
