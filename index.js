@@ -23,7 +23,7 @@ app.post('/api/chat', async (req, res) => {
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'meta-llama/llama-3.2-3b-instruct:free',
+        model:'mistralai/mistral-7b-instruct:free',
         messages: req.body.messages,
         max_tokens: 1000
       })
