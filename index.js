@@ -42,17 +42,3 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`SmartAssist backend running on port ${PORT}`);
 });
-```
-
-**Now do this:**
-
-**STEP 1** — Open `C:\Users\Reethu\smartassist-backend\index.js` in Notepad
-
-**STEP 2** — Ctrl+A → Delete → paste code above → Ctrl+S
-
-**STEP 3** — Command Prompt:
-```
-cd C:\Users\Reethu\smartassist-backend
-git add .
-git commit -m "fix cors"
-git push
