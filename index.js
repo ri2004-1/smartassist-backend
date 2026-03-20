@@ -2,13 +2,7 @@ const express = require('express');
 const cors = require('cors');
 
 const app = express();
-
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
+app.use(cors({ origin: '*' }));
 app.use(express.json({ limit: '10mb' }));
 
 app.get('/', (req, res) => {
@@ -23,10 +17,25 @@ app.post('/api/chat', async (req, res) => {
     }
 
     const messages = req.body.messages || [];
-    const lastMessage = messages[messages.length - 1];
-    const prompt = typeof lastMessage.content === 'string' 
-      ? lastMessage.content 
-      : lastMessage.content.find(c => c.type === 'text')?.text || '';
+    const parts = [];
+    
+    for (const msg of messages) {
+      if (typeof msg.content === 'string') {
+        parts.push({ text: msg.content });
+      } else if (Array.isArray(msg.content)) {
+        for (const c of msg.content) {
+          if (c.type === 'text') parts.push({ text: c.text });
+          if (c.type === 'image') {
+            parts.push({
+              inlineData: {
+                mimeType: c.source.media_type,
+                data: c.source.data
+              }
+            });
+          }
+        }
+      }
+    }
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
@@ -34,17 +43,19 @@ app.post('/api/chat', async (req, res) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
+          contents: [{ parts }]
         })
       }
     );
 
     const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
+    console.log('Gemini response:', JSON.stringify(data));
     
-    res.json({
-      content: [{ type: 'text', text }]
-    });
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 
+                 data.error?.message || 
+                 'No response from Gemini';
+    
+    res.json({ content: [{ type: 'text', text }] });
 
   } catch (err) {
     console.error('Error:', err.message);
