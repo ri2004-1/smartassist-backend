@@ -56,12 +56,3 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`SmartAssist backend running on port ${PORT}`);
 });
-```
-
-Click **Commit changes** ✅
-
----
-
-**Then go to Render:**
-```
-dashboard.render.com
