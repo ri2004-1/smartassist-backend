@@ -11,31 +11,31 @@ app.get('/', (req, res) => {
 
 app.post('/api/chat', async (req, res) => {
   try {
-    const apiKey = process.env.OPENROUTER_API_KEY;
+    const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
       return res.status(500).json({ error: 'API key not configured' });
     }
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model:'mistralai/mistral-7b-instruct:free',
+        model: 'llama-3.3-70b-versatile',
         messages: req.body.messages,
         max_tokens: 1000
       })
     });
 
     const data = await response.json();
-    console.log('OpenRouter response:', JSON.stringify(data));
-    
-    const text = data.choices?.[0]?.message?.content || 
-                 data.error?.message || 
+    console.log('Groq response:', JSON.stringify(data));
+
+    const text = data.choices?.[0]?.message?.content ||
+                 data.error?.message ||
                  'No response';
-    
+
     res.json({ content: [{ type: 'text', text }] });
 
   } catch (err) {
