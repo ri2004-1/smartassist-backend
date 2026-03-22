@@ -43,6 +43,14 @@ app.post('/api/chat', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+setInterval(async () => {
+  try {
+    await fetch('https://smartassist-backend.onrender.com');
+    console.log('Keeping backend awake...');
+  } catch (err) {
+    console.log('Ping failed:', err.message);
+  }
+}, 14 * 60 * 1000);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
